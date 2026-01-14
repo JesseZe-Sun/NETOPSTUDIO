@@ -450,57 +450,10 @@ const NodeComponent: React.FC<NodeProps> = ({
     );
   };
 
-  const [isEnhancing, setIsEnhancing] = useState(false);
-  const [selectedAIModel, setSelectedAIModel] = useState<string>(node.data.aiModel || 'gemini');
-
-  const handleEnhancePrompt = async () => {
-    if (!localPrompt.trim() || isEnhancing) return;
-    setIsEnhancing(true);
-    try {
-      const { generateTextWithAI, PROMPT_ENHANCER_INSTRUCTION } = await import('../services/aiService');
-      const enhanced = await generateTextWithAI(localPrompt, selectedAIModel as any, PROMPT_ENHANCER_INSTRUCTION);
-      setLocalPrompt(enhanced);
-      onUpdate(node.id, { prompt: enhanced, aiModel: selectedAIModel });
-    } catch (error: any) {
-      console.error('Enhancement failed:', error);
-    } finally {
-      setIsEnhancing(false);
-    }
-  };
-
   const renderMediaContent = () => {
       if (node.type === NodeType.PROMPT_INPUT) {
           return (
-            <div className="w-full h-full p-6 flex flex-col group/text gap-3">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5">
-                    {[
-                      { id: 'gemini', name: 'Gemini', icon: '✨' },
-                      { id: 'deepseek', name: 'DeepSeek', icon: '🧠' }
-                    ].map(model => (
-                      <button
-                        key={model.id}
-                        onClick={() => { setSelectedAIModel(model.id); onUpdate(node.id, { aiModel: model.id }); }}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                          selectedAIModel === model.id
-                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                            : 'bg-black/10 text-slate-400 border border-white/5 hover:bg-black/20 hover:text-slate-300'
-                        }`}
-                      >
-                        <span className="mr-1">{model.icon}</span>
-                        {model.name}
-                      </button>
-                    ))}
-                  </div>
-                  <button
-                    onClick={handleEnhancePrompt}
-                    disabled={!localPrompt.trim() || isEnhancing}
-                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-1.5"
-                  >
-                    {isEnhancing ? <Loader2 size={12} className="animate-spin" /> : <Wand2 size={12} />}
-                    {isEnhancing ? '优化中...' : 'AI优化'}
-                  </button>
-                </div>
+            <div className="w-full h-full p-6 flex flex-col group/text">
                 <div className="flex-1 bg-black/10 rounded-2xl border border-white/5 p-4 relative overflow-hidden backdrop-blur-sm transition-colors group-hover/text:bg-black/20">
                     <textarea className="w-full h-full bg-transparent resize-none focus:outline-none text-sm text-slate-200 placeholder-slate-500 font-medium leading-relaxed custom-scrollbar selection:bg-amber-500/30" placeholder="输入您的创意构想..." value={localPrompt} onChange={(e) => setLocalPrompt(e.target.value)} onBlur={commitPrompt} onKeyDown={handleCmdEnter} onWheel={(e) => e.stopPropagation()} onMouseDown={e => e.stopPropagation()} maxLength={1000} />
                 </div>

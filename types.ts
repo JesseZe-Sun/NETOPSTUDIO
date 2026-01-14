@@ -29,7 +29,6 @@ export interface AppNode {
   data: {
     prompt?: string;
     model?: string; // Selected AI model
-    aiModel?: string; // AI model for prompt enhancement (gemini/deepseek)
     image?: string; // Base64 (The currently displayed main image)
     images?: string[]; // Array of Base64 strings (for multiple generations)
     imageCount?: number; // Number of images to generate (1-4)
@@ -44,12 +43,12 @@ export interface AppNode {
     aspectRatio?: string; // e.g., '16:9', '4:3'
     resolution?: string; // e.g., '1080p', '4k'
     duration?: number; // Duration in seconds (for Audio/Video)
-
+    
     // Video Strategies (StoryContinuator, SceneDirector, FrameWeaver, CharacterRef)
-    generationMode?: VideoGenerationMode;
+    generationMode?: VideoGenerationMode; 
     selectedFrame?: string; // Base64 of the specific frame captured from video (Raw)
     croppedFrame?: string; // Base64 of the cropped/edited frame (Final Input)
-
+    
     // Input Management
     sortedInputIds?: string[]; // Order of input nodes for multi-image composition
   };

@@ -48,6 +48,7 @@ const getNodeNameCN = (t: string) => {
         case NodeType.AUDIO_GENERATOR: return '灵感音乐';
         case NodeType.VIDEO_ANALYZER: return '视频分析';
         case NodeType.IMAGE_EDITOR: return '图像编辑';
+        case NodeType.CAMERA_STUDIO: return '3D摄影棚';
         default: return t;
     }
 };
@@ -60,6 +61,7 @@ const getNodeIcon = (t: string) => {
         case NodeType.AUDIO_GENERATOR: return Mic2;
         case NodeType.VIDEO_ANALYZER: return ScanFace;
         case NodeType.IMAGE_EDITOR: return Brush;
+        case NodeType.CAMERA_STUDIO: return Camera;
         default: return Plus;
     }
 };
@@ -276,12 +278,12 @@ export const SidebarDock: React.FC<SidebarDockProps> = ({
                     </span>
                 </div>
                 <div className="flex-1 overflow-y-auto p-2 custom-scrollbar space-y-2">
-                    {[NodeType.PROMPT_INPUT, NodeType.IMAGE_GENERATOR, NodeType.VIDEO_GENERATOR, NodeType.AUDIO_GENERATOR, NodeType.VIDEO_ANALYZER, NodeType.IMAGE_EDITOR].map(t => {
+                    {[NodeType.PROMPT_INPUT, NodeType.IMAGE_GENERATOR, NodeType.VIDEO_GENERATOR, NodeType.AUDIO_GENERATOR, NodeType.VIDEO_ANALYZER, NodeType.IMAGE_EDITOR, NodeType.CAMERA_STUDIO].map(t => {
                         const ItemIcon = getNodeIcon(t);
                         return (
-                            <button 
-                                key={t} 
-                                onClick={(e) => { e.stopPropagation(); onAddNode(t); setActivePanel(null); }} 
+                            <button
+                                key={t}
+                                onClick={(e) => { e.stopPropagation(); onAddNode(t); setActivePanel(null); }}
                                 className="w-full text-left p-3 rounded-xl bg-white/5 hover:bg-white/10 flex items-center gap-3 text-sm text-slate-200 transition-colors border border-transparent hover:border-white/5 hover:shadow-lg"
                             >
                                 <div className="p-2 bg-white/10 rounded-lg text-cyan-200 shadow-inner">

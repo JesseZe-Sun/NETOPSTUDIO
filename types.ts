@@ -6,7 +6,6 @@ export enum NodeType {
   VIDEO_ANALYZER = 'VIDEO_ANALYZER',
   IMAGE_EDITOR = 'IMAGE_EDITOR',
   AUDIO_GENERATOR = 'AUDIO_GENERATOR',
-  CAMERA_STUDIO = 'CAMERA_STUDIO',
 }
 
 export enum NodeStatus {
@@ -52,21 +51,6 @@ export interface AppNode {
     
     // Input Management
     sortedInputIds?: string[]; // Order of input nodes for multi-image composition
-
-    // Camera Studio
-    subjectImage?: string; // Base64 of subject image
-    backgroundImage?: string; // Base64 of background image
-    cameraParams?: {
-      fov: number;
-      focalLengthMm: number;
-      distance: number;
-      pitch: number;
-      yaw: number;
-      roll: number;
-      position: [number, number, number];
-      target: [number, number, number];
-    };
-    renderPreset?: string; // 产品图/人像/场景等
   };
   inputs: string[]; // IDs of nodes this node connects FROM
 }

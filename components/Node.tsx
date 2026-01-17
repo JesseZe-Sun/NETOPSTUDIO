@@ -1,9 +1,8 @@
 
 // ... existing imports
 import { AppNode, NodeStatus, NodeType } from '../types';
-import { RefreshCw, Play, Image as ImageIcon, Video as VideoIcon, Type, AlertCircle, CheckCircle, Plus, Maximize2, Download, MoreHorizontal, Wand2, Scaling, FileSearch, Edit, Loader2, Layers, Trash2, X, Upload, Scissors, Film, MousePointerClick, Crop as CropIcon, ChevronDown, ChevronUp, GripHorizontal, Link, Copy, Monitor, Music, Pause, Volume2, Mic2, Camera } from 'lucide-react';
+import { RefreshCw, Play, Image as ImageIcon, Video as VideoIcon, Type, AlertCircle, CheckCircle, Plus, Maximize2, Download, MoreHorizontal, Wand2, Scaling, FileSearch, Edit, Loader2, Layers, Trash2, X, Upload, Scissors, Film, MousePointerClick, Crop as CropIcon, ChevronDown, ChevronUp, GripHorizontal, Link, Copy, Monitor, Music, Pause, Volume2, Mic2 } from 'lucide-react';
 import { VideoModeSelector, SceneDirectorOverlay } from './VideoNodeModules';
-import { CameraStudioNode } from './CameraStudioNode';
 import React, { memo, useRef, useState, useEffect, useCallback } from 'react';
 
 // ... (keep constants and helper functions: arePropsEqual, safePlay, safePause, InputThumbnails, AudioVisualizer) ...
@@ -406,17 +405,15 @@ const NodeComponent: React.FC<NodeProps> = ({
         case NodeType.AUDIO_GENERATOR: return { icon: Mic2, color: 'text-pink-400', border: 'border-pink-500/30' };
         case NodeType.VIDEO_ANALYZER: return { icon: FileSearch, color: 'text-emerald-400', border: 'border-emerald-500/30' };
         case NodeType.IMAGE_EDITOR: return { icon: Edit, color: 'text-rose-400', border: 'border-rose-500/30' };
-        case NodeType.CAMERA_STUDIO: return { icon: Camera, color: 'text-blue-400', border: 'border-blue-500/30' };
         default: return { icon: Type, color: 'text-slate-400', border: 'border-white/10' };
       }
   };
   const { icon: NodeIcon, color: iconColor } = getNodeConfig();
   
   const getNodeHeight = () => {
-      if (node.height) return node.height;
-      if (node.type === NodeType.VIDEO_ANALYZER || node.type === NodeType.IMAGE_EDITOR || node.type === NodeType.PROMPT_INPUT) return DEFAULT_FIXED_HEIGHT;
+      if (node.height) return node.height; 
+      if (node.type === NodeType.VIDEO_ANALYZER || node.type === NodeType.IMAGE_EDITOR || node.type === NodeType.PROMPT_INPUT) return DEFAULT_FIXED_HEIGHT; 
       if (node.type === NodeType.AUDIO_GENERATOR) return AUDIO_NODE_HEIGHT;
-      if (node.type === NodeType.CAMERA_STUDIO) return 520;
       const ratio = node.data.aspectRatio || '16:9';
       const [w, h] = ratio.split(':').map(Number);
       const extra = (node.type === NodeType.VIDEO_GENERATOR && generationMode === 'CUT') ? 36 : 0;
@@ -454,15 +451,6 @@ const NodeComponent: React.FC<NodeProps> = ({
   };
 
   const renderMediaContent = () => {
-      if (node.type === NodeType.CAMERA_STUDIO) {
-          return (
-            <CameraStudioNode
-              node={node}
-              onUpdate={(data, size, title) => onUpdate(node.id, data, size, title)}
-              onExpand={handleExpand}
-            />
-          );
-      }
       if (node.type === NodeType.PROMPT_INPUT) {
           return (
             <div className="w-full h-full p-6 flex flex-col group/text">

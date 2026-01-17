@@ -6,9 +6,8 @@ import { AssistantPanel } from './components/AssistantPanel';
 import { ImageCropper } from './components/ImageCropper';
 import { SketchEditor } from './components/SketchEditor'; 
 import { SmartSequenceDock } from './components/SmartSequenceDock';
-import { SonicStudio } from './components/SonicStudio';
+import { SonicStudio } from './components/SonicStudio'; 
 import { SettingsModal } from './components/SettingsModal';
-import { CameraStudioExpanded } from './components/CameraStudioExpanded';
 import { AppNode, NodeType, NodeStatus, Connection, ContextMenuState, Group, Workflow, SmartSequenceItem } from './types';
 import { generateImageFromText, generateVideo, analyzeVideo, editImageWithText, planStoryboard, orchestrateVideoPrompt, compileMultiFramePrompt, urlToBase64, extractLastFrame, generateAudio } from './services/geminiService';
 import { getGenerationStrategy } from './services/videoStrategies';
@@ -248,7 +247,6 @@ export const App = () => {
   const [expandedMedia, setExpandedMedia] = useState<any>(null);
   const [croppingNodeId, setCroppingNodeId] = useState<string | null>(null);
   const [imageToCrop, setImageToCrop] = useState<string | null>(null);
-  const [expandedCameraNode, setExpandedCameraNode] = useState<AppNode | null>(null);
 
   // Refs for closures
   const nodesRef = useRef(nodes);
@@ -1106,14 +1104,7 @@ export const App = () => {
 
               {nodes.map(node => (
               <Node
-                  key={node.id} node={node} onUpdate={handleNodeUpdate} onAction={handleNodeAction} onDelete={(id) => deleteNodes([id])} onExpand={(media) => {
-                    const n = nodes.find(x => x.id === node.id);
-                    if (n && n.type === NodeType.CAMERA_STUDIO) {
-                      setExpandedCameraNode(n);
-                    } else {
-                      setExpandedMedia(media);
-                    }
-                  }} onCrop={(id, img) => { setCroppingNodeId(id); setImageToCrop(img); }}
+                  key={node.id} node={node} onUpdate={handleNodeUpdate} onAction={handleNodeAction} onDelete={(id) => deleteNodes([id])} onExpand={setExpandedMedia} onCrop={(id, img) => { setCroppingNodeId(id); setImageToCrop(img); }}
                   onNodeMouseDown={(e, id) => { 
                       e.stopPropagation(); 
                       if (e.shiftKey || e.metaKey || e.ctrlKey) { setSelectedNodeIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]); } else { setSelectedNodeIds([id]); }
@@ -1190,13 +1181,6 @@ export const App = () => {
           
           {croppingNodeId && imageToCrop && <ImageCropper imageSrc={imageToCrop} onCancel={() => {setCroppingNodeId(null); setImageToCrop(null);}} onConfirm={(b) => {handleNodeUpdate(croppingNodeId, {croppedFrame: b}); setCroppingNodeId(null); setImageToCrop(null);}} />}
           <ExpandedView media={expandedMedia} onClose={() => setExpandedMedia(null)} />
-          {expandedCameraNode && (
-            <CameraStudioExpanded
-              node={expandedCameraNode}
-              onClose={() => setExpandedCameraNode(null)}
-              onUpdate={(data) => handleNodeUpdate(expandedCameraNode.id, data)}
-            />
-          )}
           {isSketchEditorOpen && <SketchEditor onClose={() => setIsSketchEditorOpen(false)} onGenerate={handleSketchResult} />}
           <SmartSequenceDock 
              isOpen={isMultiFrameOpen} 

@@ -1,10 +1,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { 
-    Plus, RotateCcw, History, MessageSquare, FolderHeart, X, 
-    ImageIcon, Video as VideoIcon, Film, Save, FolderPlus, 
+import {
+    Plus, RotateCcw, History, MessageSquare, FolderHeart, X,
+    ImageIcon, Video as VideoIcon, Film, Save, FolderPlus,
     Edit, Trash2, Box, ScanFace, Brush, Type, Workflow as WorkflowIcon,
-    Clapperboard, Mic2, Settings
+    Clapperboard, Mic2, Settings, Camera
 } from 'lucide-react';
 import { NodeType, Workflow } from '../types';
 

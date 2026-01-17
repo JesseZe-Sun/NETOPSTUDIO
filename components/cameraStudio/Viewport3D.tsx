@@ -1,10 +1,9 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { OrbitControls, Grid, PerspectiveCamera } from '@react-three/drei';
+import { OrbitControls, Grid } from '@react-three/drei';
 import { RotateCcw } from 'lucide-react';
 import { CameraParameters, LENS_PRESETS } from '../../types/camera';
 import * as THREE from 'three';
-import { CameraHelper } from 'three';
 
 interface Viewport3DProps {
   camera: CameraParameters;
@@ -13,10 +12,16 @@ interface Viewport3DProps {
 
 const SubjectBox = () => {
   return (
-    <mesh position={[0, 1, 0]}>
-      <boxGeometry args={[1, 2, 1]} />
-      <meshStandardMaterial color="#6366f1" wireframe />
-    </mesh>
+    <group position={[0, 1, 0]}>
+      <mesh>
+        <boxGeometry args={[1, 2, 1]} />
+        <meshStandardMaterial color="#6366f1" wireframe />
+      </mesh>
+      <mesh>
+        <boxGeometry args={[1, 2, 1]} />
+        <meshStandardMaterial color="#6366f1" transparent opacity={0.2} />
+      </mesh>
+    </group>
   );
 };
 
@@ -37,42 +42,41 @@ const RotationRings = () => {
 };
 
 const CameraFrustum = ({ cameraParams }: { cameraParams: CameraParameters }) => {
-  const cameraRef = useRef<THREE.PerspectiveCamera>(null);
-  const helperRef = useRef<THREE.CameraHelper | null>(null);
+  const groupRef = useRef<THREE.Group>(null);
 
   useFrame(() => {
-    if (cameraRef.current) {
-      cameraRef.current.position.set(...cameraParams.position);
-      cameraRef.current.lookAt(new THREE.Vector3(...cameraParams.target));
-      cameraRef.current.fov = cameraParams.fov;
-      cameraRef.current.updateProjectionMatrix();
-
-      if (helperRef.current) {
-        helperRef.current.update();
-      }
+    if (groupRef.current) {
+      groupRef.current.position.set(...cameraParams.position);
+      groupRef.current.lookAt(new THREE.Vector3(...cameraParams.target));
     }
   });
 
-  useEffect(() => {
-    if (cameraRef.current && !helperRef.current) {
-      helperRef.current = new CameraHelper(cameraRef.current);
-    }
-  }, []);
-
   return (
-    <>
-      <PerspectiveCamera ref={cameraRef} makeDefault={false} fov={cameraParams.fov} />
-      {helperRef.current && <primitive object={helperRef.current} />}
-    </>
+    <group ref={groupRef}>
+      <mesh>
+        <coneGeometry args={[0.3, 0.6, 4]} />
+        <meshBasicMaterial color="#06b6d4" wireframe />
+      </mesh>
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <boxGeometry args={[0.4, 0.3, 0.2]} />
+        <meshBasicMaterial color="#0ea5e9" />
+      </mesh>
+      <mesh position={[0, 0, -0.8]}>
+        <cylinderGeometry args={[0.05, 0.05, 1.5, 8]} />
+        <meshBasicMaterial color="#fbbf24" />
+      </mesh>
+    </group>
   );
 };
 
 const Scene = ({ camera }: { camera: CameraParameters }) => {
   return (
     <>
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[5, 5, 5]} intensity={1} />
-      <Grid infiniteGrid cellSize={1} cellThickness={0.5} sectionSize={5} sectionThickness={1} fadeDistance={30} />
+      <ambientLight intensity={0.8} />
+      <directionalLight position={[5, 5, 5]} intensity={1.5} />
+      <directionalLight position={[-5, 3, -5]} intensity={0.5} />
+      <pointLight position={[0, 10, 0]} intensity={1} />
+      <Grid infiniteGrid cellSize={1} cellThickness={0.5} sectionSize={5} sectionThickness={1.5} fadeDistance={30} fadeStrength={1} />
       <SubjectBox />
       <RotationRings />
       <CameraFrustum cameraParams={camera} />
@@ -177,10 +181,16 @@ export const Viewport3D: React.FC<Viewport3DProps> = ({ camera, onCameraChange }
         </button>
       </div>
 
-      <div className="flex-1 relative">
-        <Canvas camera={{ position: [8, 6, 8], fov: 50 }}>
+      <div className="flex-1 relative bg-gradient-to-br from-slate-900 to-slate-950">
+        <Canvas
+          camera={{ position: [8, 6, 8], fov: 50 }}
+          gl={{ alpha: true }}
+          style={{ background: 'transparent' }}
+        >
+          <color attach="background" args={['#0f172a']} />
+          <fog attach="fog" args={['#0f172a', 20, 50]} />
           <Scene camera={localCamera} />
-          <OrbitControls makeDefault />
+          <OrbitControls makeDefault enableDamping dampingFactor={0.05} />
         </Canvas>
 
         <div className="absolute bottom-4 left-4 px-4 py-2 bg-black/60 backdrop-blur-md border border-white/10 rounded-lg">

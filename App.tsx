@@ -4,18 +4,20 @@ import { Node } from './components/Node';
 import { SidebarDock } from './components/SidebarDock';
 import { AssistantPanel } from './components/AssistantPanel';
 import { ImageCropper } from './components/ImageCropper';
-import { SketchEditor } from './components/SketchEditor'; 
+import { SketchEditor } from './components/SketchEditor';
 import { SmartSequenceDock } from './components/SmartSequenceDock';
-import { SonicStudio } from './components/SonicStudio'; 
+import { SonicStudio } from './components/SonicStudio';
 import { SettingsModal } from './components/SettingsModal';
+import { AuthModal } from './components/AuthModal';
+import { useAuth } from './contexts/AuthContext';
 import { AppNode, NodeType, NodeStatus, Connection, ContextMenuState, Group, Workflow, SmartSequenceItem } from './types';
 import { generateImageFromText, generateVideo, analyzeVideo, editImageWithText, planStoryboard, orchestrateVideoPrompt, compileMultiFramePrompt, urlToBase64, extractLastFrame, generateAudio } from './services/geminiService';
 import { getGenerationStrategy } from './services/videoStrategies';
 import { saveToStorage, loadFromStorage } from './services/storage';
-import { 
-    Plus, Copy, Trash2, Type, Image as ImageIcon, Video as VideoIcon, 
+import {
+    Plus, Copy, Trash2, Type, Image as ImageIcon, Video as VideoIcon,
     ScanFace, Brush, MousePointerClick, LayoutTemplate, X, Film, Link, RefreshCw, Upload,
-    Minus, FolderHeart, Unplug, Sparkles, ChevronLeft, ChevronRight, Scan, Music, Mic2, Loader2
+    Minus, FolderHeart, Unplug, Sparkles, ChevronLeft, ChevronRight, Scan, Music, Mic2, Loader2, LogOut, User
 } from 'lucide-react';
 
 // Apple Physics Curve
@@ -187,13 +189,17 @@ const ExpandedView = ({ media, onClose }: { media: any, onClose: () => void }) =
 };
 
 export const App = () => {
+  const { user, profile, loading, signOut } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
   // --- Global App State ---
-  const [workflows, setWorkflows] = useState<Workflow[]>([]); 
+  const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [assetHistory, setAssetHistory] = useState<any[]>([]);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false); 
-  
+  const [isLoaded, setIsLoaded] = useState(false);
+
   // Sketch Editor State
   const [isSketchEditorOpen, setIsSketchEditorOpen] = useState(false);
 
@@ -202,7 +208,7 @@ export const App = () => {
 
   // Sonic Studio (Music) State
   const [isSonicStudioOpen, setIsSonicStudioOpen] = useState(false);
-  
+
   // Settings State
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
@@ -999,9 +1005,70 @@ export const App = () => {
       return () => { document.head.removeChild(style); };
   }, []);
 
+  if (loading) {
+    return (
+      <div className="w-screen h-screen flex items-center justify-center bg-[#0a0a0c]">
+        <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <>
+        <div className="w-screen h-screen flex items-center justify-center bg-[#0a0a0c]">
+          <div className="text-center">
+            <h1 className="text-6xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white via-zinc-300 to-zinc-600 mb-8">
+              NETOPSTUDIO
+            </h1>
+            <button
+              onClick={() => setShowAuthModal(true)}
+              className="px-8 py-3 bg-cyan-600 hover:bg-cyan-700 rounded-lg font-medium transition-colors"
+            >
+              Login to Continue
+            </button>
+          </div>
+        </div>
+        {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
+      </>
+    );
+  }
+
   return (
     <div className="w-screen h-screen overflow-hidden bg-[#0a0a0c]">
-      <div 
+      <div className="absolute top-4 right-4 z-50 flex items-center gap-3">
+        <div className="relative">
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="flex items-center gap-2 px-4 py-2 bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 rounded-full hover:bg-[#27272a] transition-colors"
+          >
+            <div className="w-6 h-6 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-full flex items-center justify-center text-xs font-bold">
+              {profile?.username[0].toUpperCase()}
+            </div>
+            <span className="text-sm font-medium">{profile?.username}</span>
+            {profile?.role === 'admin' && (
+              <span className="px-2 py-0.5 bg-cyan-600 rounded text-xs font-bold">ADMIN</span>
+            )}
+          </button>
+
+          {showUserMenu && (
+            <div className="absolute top-full right-0 mt-2 w-48 bg-[#1c1c1e]/90 backdrop-blur-xl border border-white/10 rounded-lg shadow-2xl overflow-hidden">
+              <button
+                onClick={() => {
+                  setShowUserMenu(false);
+                  signOut();
+                }}
+                className="w-full px-4 py-3 text-left text-sm flex items-center gap-2 hover:bg-white/10 transition-colors text-red-400"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div
           className={`w-full h-full overflow-hidden text-slate-200 selection:bg-cyan-500/30 ${isDraggingCanvas ? 'cursor-grabbing' : 'cursor-default'}`}
           onMouseDown={handleCanvasMouseDown} onWheel={handleWheel} 
           onDoubleClick={(e) => { e.preventDefault(); if (e.detail > 1 && !selectionRect) { setContextMenu({ visible: true, x: e.clientX, y: e.clientY, id: '' }); setContextMenuTarget({ type: 'create' }); } }}

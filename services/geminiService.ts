@@ -1,21 +1,25 @@
 
 import { GoogleGenAI, GenerateContentResponse, Type, Modality, Part, FunctionDeclaration } from "@google/genai";
 import { SmartSequenceItem, VideoGenerationMode } from "../types";
+import { getApiKey } from "./apiKeyService";
 
-// --- Initialization ---
-
-const API_KEY = 'sk-61cPRlkHDLt1OtHQzOaKwiC4DAiBHLImjuL6dR9iRHIE13u7';
 const BASE_URL = 'https://gaccodeapi.com/v1';
 const DEFAULT_MODEL = 'gemini-3-pro-preview';
 
-const getClient = () => {
-  return new GoogleGenAI({ 
-      apiKey: API_KEY,
+const getClient = async () => {
+  const apiKey = await getApiKey('gemini');
+  if (!apiKey) {
+    throw new Error('Gemini API key not configured. Please contact your administrator.');
+  }
+  return new GoogleGenAI({
+      apiKey,
       baseUrl: BASE_URL
   });
 };
 
-const getPolloKey = () => {
+const getPolloKey = async () => {
+    const dbKey = await getApiKey('pollo');
+    if (dbKey) return dbKey;
     return localStorage.getItem('pollo_api_key');
 };
 
@@ -311,11 +315,11 @@ const HELP_ME_WRITE_INSTRUCTION = `
 // --- API Functions ---
 
 export const sendChatMessage = async (
-    history: { role: 'user' | 'model', parts: { text: string }[] }[], 
+    history: { role: 'user' | 'model', parts: { text: string }[] }[],
     newMessage: string,
     options?: { isThinkingMode?: boolean, isStoryboard?: boolean, isHelpMeWrite?: boolean }
 ): Promise<string> => {
-    const ai = getClient();
+    const ai = await getClient();
     
     // Model Selection
     let modelName = DEFAULT_MODEL; // Default to gemini-3-pro-preview
@@ -347,7 +351,7 @@ export const generateImageFromText = async (
     inputImages: string[] = [], 
     options: { aspectRatio?: string, resolution?: string, count?: number } = {}
 ): Promise<string[]> => {
-    const ai = getClient();
+    const ai = await getClient();
     
     // Fallback/Correction for model names
     const effectiveModel = model.includes('imagen') ? 'imagen-3.0-generate-002' : DEFAULT_MODEL;
@@ -408,7 +412,7 @@ export const generateVideo = async (
     referenceImages?: string[],
     lastImageBase64?: string | null
 ): Promise<{ uri: string, isFallbackImage?: boolean, videoMetadata?: any, uris?: string[] }> => {
-    const ai = getClient();
+    const ai = await getClient();
     
     // --- Quality Optimization ---
     const qualitySuffix = ", cinematic lighting, highly detailed, photorealistic, 4k, smooth motion, professional color grading";
@@ -553,7 +557,7 @@ export const generateVideo = async (
 };
 
 export const analyzeVideo = async (videoBase64OrUrl: string, prompt: string, model: string): Promise<string> => {
-    const ai = getClient();
+    const ai = await getClient();
     let inlineData: any = null;
 
     if (videoBase64OrUrl.startsWith('data:')) {
@@ -586,7 +590,7 @@ export const editImageWithText = async (imageBase64: string, prompt: string, mod
 };
 
 export const planStoryboard = async (prompt: string, context: string): Promise<string[]> => {
-    const ai = getClient();
+    const ai = await getClient();
     const response = await ai.models.generateContent({
         model: DEFAULT_MODEL,
         config: { 
@@ -605,7 +609,7 @@ export const planStoryboard = async (prompt: string, context: string): Promise<s
 
 export const orchestrateVideoPrompt = async (images: string[], userPrompt: string): Promise<string> => {
      // Use Vision model to describe the sequence
-     const ai = getClient();
+     const ai = await getClient();
      const parts: Part[] = images.map(img => ({ inlineData: { data: img.replace(/^data:.*;base64,/, ""), mimeType: "image/png" } }));
      parts.push({ text: `Create a single video prompt that transitions between these images. User Intent: ${userPrompt}` });
      
@@ -628,7 +632,7 @@ export const generateAudio = async (
     referenceAudio?: string, 
     options?: { persona?: any, emotion?: any }
 ): Promise<string> => {
-    const ai = getClient();
+    const ai = await getClient();
     
     const parts: Part[] = [{ text: prompt }];
     // If reference audio exists (for cloning - mocked here as input audio part)
@@ -662,7 +666,7 @@ export const generateAudio = async (
 };
 
 export const transcribeAudio = async (audioBase64: string): Promise<string> => {
-    const ai = getClient();
+    const ai = await getClient();
     const mime = audioBase64.match(/^data:(audio\/\w+);base64,/)?.[1] || 'audio/wav';
     const data = audioBase64.replace(/^data:audio\/\w+;base64,/, "");
     
@@ -683,7 +687,7 @@ export const connectLiveSession = async (
     onAudioData: (base64: string) => void,
     onClose: () => void
 ) => {
-    const ai = getClient();
+    const ai = await getClient();
     // Using a specific Live-compatible model
     const model = 'gemini-2.5-flash-native-audio-preview-09-2025';
     const sessionPromise = ai.live.connect({
